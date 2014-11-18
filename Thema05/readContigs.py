@@ -26,7 +26,7 @@ class Contig:
     def _calculate_percentage(self, nuc):
         return 100 / self.length * self.seq.count(nuc)
 
-    def getPerc(self, nuc):
+    def get_perc(self, nuc):
         return self.percentages[nuc]
 
 
@@ -36,6 +36,8 @@ class DataBase:
         self.user = user
         self.passwd = passwd
         self.db = db
+        self.conn = None
+        self.cur = None
 
     def open_connection(self):
         self.conn = pymysql.connect(host=self.host, user=self.user, passwd=self.passwd, db=self.db)
