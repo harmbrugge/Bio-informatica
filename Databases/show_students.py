@@ -1,53 +1,50 @@
 #!/usr/bin/python3
 import cgi
-#import database
-
-host = "localhost"
-username = "root"
-schema = "test"
-password = "Idg6a0ki!"
-
-#db = database.Database(host, username, password, schema)
-#db.open_connection()
-#names = db.get_names()
+import database
+import website
 
 
-print("Content-Type: text/html")    # HTML is following
-print()                             # blank line, end of headers
+def main():
+    # Open connection
+    db = database.Database("mysql.bin", "hbrugge", "Idg6a0ki!", "Hbrugge")
+    db.open_connection()
+
+    # Get student names
+    names = db.get_names()
+
+    # Get url parameters
+    parameters = cgi.FieldStorage()
+    results = ()
+    if 'student' in parameters.keys():
+        results = db.get_results(parameters['student'].value)
+
+    # Close connection
+    db.close_connection()
+
+    html = website.Website()
+
+    print("Content-Type: text/html")
+    print()
+
+    print(html.get_header("Studenten"))
+
+    print('<div class="panel panel-default"><div class="panel-body">')
+    print('<table class="table table-hover"><thead><tr><th>Student</th></tr></thead>')
+    print('<tbody>')
+    for name in names:
+        print('<tr><td><a href="show_students.py?student=' + name + '">' + name + '</a></td></tr>')
+    print('</tr>')
+    print('</tbody>')
+    print('</table>')
+    print('</div></div>')
+
+    if 'student' in parameters.keys():
+        print('<script type="text/javascript">')
+        print('bootbox.alert("' + str(results) + '")')
+        print('</script>')
+
+    print(html.get_footer())
 
 
-print('<html>'
-      '<head>'
-      '<title>Harm Brugge - Studenten</title>'
-      '<link rel="icon" href="../resources/img/dna.png"/>'
-      '<link href="../resources/css/bootstrap.min.css" rel="stylesheet">'
-      '<link href="../resources/css/main.css" rel="stylesheet">'
-      '<script type="text/javascript" src="../resources/js/jquery.js"></script>'
-      '<script src="../resources/js/bootstrap.min.js"></script>'
-      '</head>'
-      '<body>'
-      '<div class="container shadow">'
-      '<div class="logo">'
-      '</div>'
-      '<br/>'
-      '<div class="row content">'
-      '<div class="content-main">'
-      '<br/>'
-      '<p class="lead content-title">Studenten</p>')
-
-#print(names)
-
-print('</div>'
-      '</div>'
-      '</div>'
-      '<div class="footer">'
-      '<div class="container">'
-      '<p class="text-muted">Copyright Harm Brugge 2014.</p>'
-      '</div>'
-      '</div>'
-      '</body>'
-      '</html>')
-
-#arguments = cgi.FieldStorage()
-#for i in arguments:
-#    print(arguments[i].value)
+if __name__ == '__main__':
+    main()
