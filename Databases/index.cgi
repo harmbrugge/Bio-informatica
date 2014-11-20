@@ -1,4 +1,7 @@
 #!/usr/bin/python3
+import cgi
+import database
+import cgitb
 
 
 class Website:
@@ -97,3 +100,67 @@ class Website:
         self.table = html
 
         return html
+
+
+class StudentPage:
+    def __init__(self):
+        self.header = None
+        self.footer = None
+        self.table = None
+        self.body = None
+
+    def get_header(self):
+        self.header = Website().get_header("Students")
+        return self.header
+
+    def get_body(self, parameters):
+        self.body = '<div class="panel panel-default"><div class="panel-body">' \
+                    '<table class="table table-hover"><thead><tr><th>Student</th></tr></thead>' \
+                    '<tbody>'
+        # Open db connection
+        db = database.Database()
+        db.open_connection()
+        # Get student names from db and print table row with link for every student
+        for name in db.get_names():
+            self.body += '<tr><td><a href="index.cgi?student=' + name + '">' + name + '</a></td></tr>'
+
+        self.body += '</tr></tbody>' \
+                     '</table></div></div>'
+
+        # Pop alert with exam results if student param exists
+        if 'student' in parameters.keys():
+            # Get student results from db
+            results = db.get_results(parameters['student'].value)
+            print('<script type="text/javascript">')
+            print("bootbox.alert('<p class=\"lead text-center\">Exams: "
+                  + parameters['student'].value + "</p>" + Website().make_table(results) + "')")
+            print('</script>')
+
+        db.close_connection()
+
+        return self.body
+
+
+def main():
+    cgitb.enable()
+
+    # Get url parameters
+    parameters = cgi.FieldStorage()
+
+    # Create Website object for required HTML
+    html = Website()
+    student_page = StudentPage()
+
+    # Set content type
+    print("Content-Type: text/html")
+    print()
+
+    # Get header with title Students
+    print(student_page.get_header())
+
+    print(student_page.get_body(parameters))
+    # End with footer
+    print(html.get_footer())
+
+if __name__ == '__main__':
+    main()

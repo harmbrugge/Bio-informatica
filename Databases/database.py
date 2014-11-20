@@ -7,11 +7,11 @@ class Database:
     Database class manages the connection and
     data transfer to and from MySQL Server
     """
-    def __init__(self, host, user, passwd, db):
-        self.host = host
-        self.user = user
-        self.passwd = passwd
-        self.db = db
+    def __init__(self):
+        self.host = "mysql.bin"
+        self.user = "hbrugge"
+        self.passwd = "Idg6a0ki!"
+        self.db = "Hbrugge"
         self.conn = None
         self.cur = None
 
