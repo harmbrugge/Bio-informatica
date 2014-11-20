@@ -2,6 +2,7 @@
 import cgi
 import database
 import website
+import cgitb
 
 
 def main():
@@ -10,6 +11,7 @@ def main():
     Shows a table with all the student names
     Pop-up with exam results if student is clicked
     """
+    cgitb.enable()
     # Open db connection
     db = database.Database("mysql.bin", "hbrugge", "Idg6a0ki!", "Hbrugge")
     db.open_connection()

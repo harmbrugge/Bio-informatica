@@ -33,7 +33,7 @@ class Website:
                       '<body>' \
                       '<div class="container shadow">' \
                       '<div class="logo">' \
-                      '<h1>Harm Brugge <span class="label label-success">Bio-informatica</span></h1>' \
+                      '<h1>Harm Brugge <span class="label label-warning">Bio-informatica</span></h1>' \
                       '</div>' \
                       '<br/>' \
                       '<div class="row content">' \
