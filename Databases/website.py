@@ -2,11 +2,23 @@
 
 
 class Website:
+    """
+    Class with building blocks for a website.
+    HTML depends on Bootstrap 3 and custom css,
+    installed in ../resources/
+    """
     def __init__(self):
         self.header = None
         self.footer = None
+        self.table = None
 
     def get_header(self, title):
+        """
+        Function to get HTML for header of web-site
+        :param title: The title of the web-page
+        :return: Complete html before content
+                 (call get_footer for html after content)
+        """
         self.header = '<!DOCTYPE html>' \
                       '<html>' \
                       '<head>' \
@@ -21,6 +33,7 @@ class Website:
                       '<body>' \
                       '<div class="container shadow">' \
                       '<div class="logo">' \
+                      '<h1>Harm Brugge <span class="label label-success">Bio-informatica</span></h1>' \
                       '</div>' \
                       '<br/>' \
                       '<div class="row content">' \
@@ -30,6 +43,10 @@ class Website:
         return self.header
 
     def get_footer(self):
+        """
+        Function for getting the footer after custom content
+        :return: String of HTML
+        """
         self.footer = '</div>' \
                       '</div>' \
                       '</div>' \
@@ -42,5 +59,41 @@ class Website:
                       '</html>'
         return self.footer
 
-    def make_table(self, dictionary):
-        pass
+    def make_table(self, content):
+        """
+        Function creates a HTML table out of an iterable
+        :param content: Will only work on a list or tuple of Dictionary's for now.
+                        Keys must be the same for every item
+        :return: String of HTML
+        """
+        html = '<table class="table table-condensed">'
+
+        # Check for list or tuple
+        if type(content) is list or type(content) is tuple:
+            # If first item in list is dictionary continue
+            if len(content) > 0:
+                if type(content[0]) is dict:
+                    # Make table header for every key
+                    html += '<thead><tr>'
+                    for key in content[0].keys():
+                        html += '<th>' + key + '</th>'
+                    html += '</tr></thead>'
+
+                    # Make table body
+                    html += '<tbody>'
+                    for dictonary in content:
+                        # New table row for every dict item in list
+                        html += '<tr>'
+                        # New column for every value in dictionary
+                        for value in dictonary.values():
+                            html += '<td>' + str(value) + '</td>'
+                        html += '</tr>'
+                    html += '</tbody>'
+            else:
+                html += 'No content available'
+
+        html += '</table>'
+
+        self.table = html
+
+        return html
