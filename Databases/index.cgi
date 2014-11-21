@@ -19,7 +19,7 @@ class Website:
         """
         Function to get HTML for header of web-site
         :param title: The title of the web-page
-        :return: Complete html before content
+        :return: String with complete html before content
                  (call get_footer for html after content)
         """
         self.header = '<!DOCTYPE html>' \
@@ -67,7 +67,7 @@ class Website:
         Function creates a HTML table out of an iterable
         :param content: Will only work on a list or tuple of Dictionary's for now.
                         Keys must be the same for every item
-        :return: String of HTML
+        :return: String of HTML with table & content
         """
         html = '<table class="table table-condensed">'
 
@@ -110,19 +110,29 @@ class StudentPage:
         self.body = None
 
     def get_header(self):
+        """
+        Create header from Website class
+        :return: String of HTML with header and title set to Students
+        """
         self.header = Website().get_header("Students")
         return self.header
 
     def get_body(self, parameters):
+        """
+        Get body for student page
+        :param parameters: URL parameters to determine if student is selected
+        :return: String of HTML with table of all students and pop up with grades
+                 if student is selected
+        """
         self.body = '<div class="panel panel-default"><div class="panel-body">' \
                     '<table class="table table-hover"><thead><tr><th>Student</th></tr></thead>' \
                     '<tbody>'
         # Open db connection
         db = database.Database()
         db.open_connection()
-        # Get student names from db and print table row with link for every student
+        # Get student names from db and print table row with link for each student
         for name in db.get_names():
-            self.body += '<tr><td><a href="index.cgi?student=' + name + '">' + name + '</a></td></tr>'
+            self.body += '<tr><td><a href="index.cgi?content=students&student=' + name + '">' + name + '</a></td></tr>'
 
         self.body += '</tr></tbody>' \
                      '</table></div></div>'
@@ -149,16 +159,21 @@ def main():
 
     # Create Website object for required HTML
     html = Website()
-    student_page = StudentPage()
 
     # Set content type
     print("Content-Type: text/html")
     print()
 
-    # Get header with title Students
-    print(student_page.get_header())
+    # Determine content from url parameter
+    if 'content' in parameters.keys():
+        if parameters['content'].value == 'students':
+            # Get header with title Students
+            student_page = StudentPage()
+            print(student_page.get_header())
+            print(student_page.get_body(parameters))
+    else:
+        print(html.get_header("Title"))
 
-    print(student_page.get_body(parameters))
     # End with footer
     print(html.get_footer())
 

@@ -7,6 +7,7 @@ class Database:
     Database class manages the connection and
     data transfer to and from MySQL Server
     """
+
     def __init__(self):
         self.host = "mysql.bin"
         self.user = "hbrugge"
@@ -17,7 +18,7 @@ class Database:
 
     def open_connection(self):
         """
-        Opens a connection required for any other opperation
+        Opens a connection required for any other operation
         """
         self.conn = pymysql.connect(host=self.host, user=self.user, passwd=self.passwd, db=self.db)
 
@@ -51,14 +52,17 @@ class Database:
 
     def get_results(self, stud_name):
         """
-        Gets all the data in examen table for one student
+        Gets exam data for one student
         :param stud_name: Last name of student
         :return: A list with dictionaries for every exam, key will be the column name
         """
         self.cur = self.conn.cursor(pymysql.cursors.DictCursor)
         self.cur.execute(
-            "SELECT e.* FROM studenten s INNER JOIN examens e ON e.stud_id = s.stud_id "
-            "WHERE s.naam = '{0}'".format(stud_name))
+            "SELECT c.naam, e.cijfer, e.ex_datum "
+            "FROM studenten s "
+            "INNER JOIN examens e ON e.stud_id = s.stud_id "
+            "INNER JOIN cursussen c ON c.cur_id = e.cur_id WHERE s.naam = '{0}' "
+            "ORDER BY e.ex_datum DESC".format(stud_name))
         self.cur.close()
 
         return self.cur.fetchall()
