@@ -56,7 +56,7 @@ class Database:
         :param stud_name: Last name of student
         :return: A list with dictionaries for every exam, key will be the column name
         """
-        self.cur = self.conn.cursor(pymysql.cursors.DictCursor)
+
         self.cur.execute(
             "SELECT c.naam, e.cijfer, e.ex_datum "
             "FROM studenten s "
@@ -66,3 +66,7 @@ class Database:
         self.cur.close()
 
         return self.cur.fetchall()
+
+    def check_injections(self, sql):
+        
+        pass
