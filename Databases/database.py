@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 import pymysql
+import re
 
 
 class Database:
@@ -9,12 +10,27 @@ class Database:
     """
 
     def __init__(self):
-        self.host = "mysql.bin"
-        self.user = "hbrugge"
-        self.passwd = "Idg6a0ki!"
-        self.db = "Hbrugge"
+        config = self._get_configurations()
+        self.host = config["host"]
+        self.user = config["user"]
+        self.passwd = config["passwd"]
+        self.db = config["db"]
         self.conn = None
         self.cur = None
+
+    @staticmethod
+    def _get_configurations():
+        config_info = dict()
+
+        file = open('config.my.cnf', 'r')
+
+        for line in file:
+            if re.search('(.=.)', line):
+                line = line.strip('\n')
+                line = line.split('=')
+                config_info.update({line[0]: line[1]})
+
+        return config_info
 
     def open_connection(self):
         """
@@ -56,7 +72,7 @@ class Database:
         :param stud_name: Last name of student
         :return: A list with dictionaries for every exam, key will be the column name
         """
-
+        self.cur = self.conn.cursor(pymysql.cursors.DictCursor)
         self.cur.execute(
             "SELECT c.naam, e.cijfer, e.ex_datum "
             "FROM studenten s "
@@ -68,5 +84,11 @@ class Database:
         return self.cur.fetchall()
 
     def check_injections(self, sql):
-        
-        pass
+        regex = "(\sor\s)|(\sand\s)|;|(=)"
+        if re.search(regex, sql.lower()):
+            return True
+
+        return False
+
+if __name__ == '__main__':
+    Database().get_configurations()
