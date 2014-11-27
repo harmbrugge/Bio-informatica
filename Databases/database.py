@@ -83,12 +83,10 @@ class Database:
 
         return self.cur.fetchall()
 
-    def check_injections(self, sql):
-        regex = "(\sor\s)|(\sand\s)|;|(=)"
+    @staticmethod
+    def check_injections(sql):
+        regex = "(\sor\s)|(\sand\s)|;|="
         if re.search(regex, sql.lower()):
             return True
 
         return False
-
-if __name__ == '__main__':
-    Database().get_configurations()

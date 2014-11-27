@@ -73,8 +73,8 @@ class Website:
 
         # Check for list or tuple
         if type(content) is list or type(content) is tuple:
-            # If first item in list is dictionary continue
             if len(content) > 0:
+                # If first item in list is dictionary continue
                 if type(content[0]) is dict:
                     # Make table header for every key
                     html += '<thead><tr>'
@@ -103,6 +103,9 @@ class Website:
 
 
 class StudentPage:
+    """
+    Class with html for Students detail page
+    """
     def __init__(self):
         self.header = None
         self.footer = None
@@ -138,13 +141,19 @@ class StudentPage:
                      '</table></div></div>'
 
         # Pop alert with exam results if student param exists
+        # or show error message when SQL injection is suspected
         if 'student' in parameters.keys():
             # Get student results from db
-            results = db.get_results(parameters['student'].value)
-            print('<script type="text/javascript">')
-            print("bootbox.alert('<p class=\"lead text-center\">Exams: "
-                  + parameters['student'].value + "</p>" + Website().make_table(results) + "')")
-            print('</script>')
+            if db.check_injections(parameters['student'].value):
+                print('<script type="text/javascript">')
+                print("bootbox.alert('<p class=\"lead text-center\">SQL Injection gevonden</p>')")
+                print('</script>')
+            else:
+                results = db.get_results(parameters['student'].value)
+                print('<script type="text/javascript">')
+                print("bootbox.alert('<p class=\"lead text-center\">Exams: "
+                      + parameters['student'].value + "</p>" + Website().make_table(results) + "')")
+                print('</script>')
 
         db.close_connection()
 
