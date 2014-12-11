@@ -83,6 +83,26 @@ class Database:
 
         return self.cur.fetchall()
 
+    def get_genes(self):
+        self.cur = self.conn.cursor(pymysql.cursors.DictCursor)
+        self.cur.execute("call sp_get_genes()")
+        self.conn.next_result()
+        # self.cur.callproc('sp_get_genes')
+
+        self.cur.close()
+
+        return self.cur.fetchall()
+
+    def get_tm_vs_probes(self):
+        self.cur = self.conn.cursor(pymysql.cursors.DictCursor)
+        self.cur.execute("call sp_get_tm_vs_probes(@temp)")
+        self.cur.execute("select @temp")
+        # self.cur.callproc('sp_get_genes')
+
+        self.cur.close()
+
+        return self.cur.fetchall()
+
     @staticmethod
     def check_injections(sql):
         regex = "(\sor\s)|(\sand\s)|;|="
@@ -90,3 +110,12 @@ class Database:
             return True
 
         return False
+
+if __name__ == '__main__':
+    database = Database()
+    database.open_connection()
+    genes = database.get_genes()
+    print(genes)
+    tm_vs_probes = database.get_tm_vs_probes()
+    print(tm_vs_probes)
+    database.close_connection()
