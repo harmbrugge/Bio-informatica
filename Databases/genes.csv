@@ -1,0 +1,3 @@
+id;chromosome_id;external_id;sequence;start;stop;strand
+1;1;535153;NULL;20;800;-
+2;1;2414315;NULL;56;900;+
