@@ -74,6 +74,7 @@ CREATE TABLE oligo (
     cg_perc       DOUBLE      NOT NULL,
     temp_melt     DOUBLE      NOT NULL,
     sequence      CHAR(25)    NOT NULL,
+    duplicate     BOOL        NULL DEFAULT FALSE,
 
     PRIMARY KEY (id),
     FOREIGN KEY (gene_id)
@@ -131,26 +132,3 @@ LOAD DATA LOCAL INFILE 'probes.csv'
     FIELDS
         TERMINATED BY ';'
     IGNORE 1 LINES;
-
-
-CREATE PROCEDURE sp_get_genes
-BEGIN
-    select external_id from gene;
-
-END
-//
-/*
-
-
-DELIMITER //
-
-CREATE PROCEDURE sp_get_genes
-
-AS
-BEGIN
-    SELECT external_id
-    FROM genes;
-END //
-DELIMITER ;
-
-*/
