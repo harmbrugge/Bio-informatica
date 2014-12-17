@@ -1,8 +1,16 @@
+/*
+SQL Script with stored procedures depends on database made by create.sql
+ */
+
 DROP PROCEDURE IF EXISTS sp_get_genes;
 DROP PROCEDURE IF EXISTS sp_get_tm_vs_probes;
 DROP PROCEDURE IF EXISTS sp_mark_duplicate_oligos;
 
 DELIMITER //
+
+/*
+SP to get all entries from gene table
+ */
 
 CREATE PROCEDURE sp_get_genes()
 
@@ -13,7 +21,11 @@ CREATE PROCEDURE sp_get_genes()
     FROM gene;
   END //
 
-CREATE PROCEDURE sp_get_tm_vs_probes(OUT out_param INT)
+/*
+SP which will divide the number of oligo entries by the number of enties with a unique melting temperature
+ */
+
+CREATE PROCEDURE sp_get_tm_vs_probes(OUT out_param DOUBLE)
 
   BEGIN
     DECLARE oligo_count INT;
@@ -31,9 +43,17 @@ CREATE PROCEDURE sp_get_tm_vs_probes(OUT out_param INT)
 
   END //
 
+/*
+SP which will mark all the enties with a duplicate sequence present in oligo table
+return: number of marked oligo's
+ */
+
 CREATE PROCEDURE sp_mark_duplicate_oligos()
 
   BEGIN
+    UPDATE oligo
+    SET duplicate = FALSE;
+
     UPDATE oligo
       RIGHT JOIN (SELECT
                     sequence,
@@ -43,14 +63,11 @@ CREATE PROCEDURE sp_mark_duplicate_oligos()
                   HAVING count(sequence) > 1) AS duplicates ON oligo.sequence = duplicates.sequence
     SET duplicate = TRUE;
 
+    SELECT count(*)
+    FROM oligo
+    WHERE duplicate = TRUE;
+
   END //
 
 DELIMITER ;
-/*
-Breid je sql script uit met een stored routine, sp_mark_duplicate_oligos, die oligo's/probes waarvan de
-sequentie niet uniek is binnen het coderende genoom als zodanig kenmerkt. De benodigde informatie
-krijgt deze stored procedure mee als parameters. Ook deze stored routine moet te benaderen zijn door
-een functie in je python module.
- */
-
 

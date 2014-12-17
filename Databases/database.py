@@ -22,7 +22,7 @@ class Database:
     def _get_configurations():
         config_info = dict()
 
-        file = open('config.my.cnf', 'r')
+        file = open('my.cnf', 'r')
 
         for line in file:
             if re.search('(.=.)', line):
