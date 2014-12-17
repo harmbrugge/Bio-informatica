@@ -37,6 +37,7 @@ CREATE TABLE chromosome (
     sequence      TEXT        NULL DEFAULT NULL,
 
     PRIMARY KEY (id),
+    INDEX organism_id (organism_id),
     FOREIGN KEY (organism_id)
         REFERENCES organism(id)
     );
@@ -58,6 +59,7 @@ CREATE TABLE gene (
     strand        CHAR(1)     NULL DEFAULT '+',
 
     PRIMARY KEY (id),
+    INDEX chromosome_id (chromosome_id),
     FOREIGN KEY (chromosome_id)
         REFERENCES chromosome(id)
     );
@@ -77,6 +79,7 @@ CREATE TABLE oligo (
     duplicate     BOOL        NULL DEFAULT FALSE,
 
     PRIMARY KEY (id),
+    INDEX gene_id (gene_id),
     FOREIGN KEY (gene_id)
         REFERENCES gene(id)
     );
@@ -107,6 +110,7 @@ CREATE TABLE probe (
     pos_y         INT         NULL DEFAULT 0,
 
     PRIMARY KEY (id),
+    INDEX micro_oligo (microarray_id, oligo_id),
     FOREIGN KEY (microarray_id)
         REFERENCES microarray(id),
     FOREIGN KEY (oligo_id)
