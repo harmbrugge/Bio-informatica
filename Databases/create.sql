@@ -37,7 +37,6 @@ CREATE TABLE chromosome (
     sequence      TEXT        NULL DEFAULT NULL,
 
     PRIMARY KEY (id),
-    INDEX organism_id (organism_id),
     FOREIGN KEY (organism_id)
         REFERENCES organism(id)
     );
@@ -59,7 +58,6 @@ CREATE TABLE gene (
     strand        CHAR(1)     NULL DEFAULT '+',
 
     PRIMARY KEY (id),
-    INDEX chromosome_id (chromosome_id),
     FOREIGN KEY (chromosome_id)
         REFERENCES chromosome(id)
     );
@@ -79,6 +77,8 @@ CREATE TABLE oligo (
     duplicate     BOOL        NULL DEFAULT FALSE,
 
     PRIMARY KEY (id),
+    INDEX cg_perc (cg_perc),
+    INDEX temp_melt (temp_melt),
     INDEX gene_id (gene_id),
     FOREIGN KEY (gene_id)
         REFERENCES gene(id)
@@ -91,7 +91,7 @@ CREATE TABLE microarray (
         Auto increment id en een optionele optimale hybridisatie temperatuur
     */
     id            INT         NOT NULL AUTO_INCREMENT,
-    hybrid_temp   INT         NULL DEFAULT NULL,
+    hybrid_temp   DOUBLE      NULL DEFAULT NULL,
 
     PRIMARY KEY (id)
     );
@@ -111,6 +111,7 @@ CREATE TABLE probe (
 
     PRIMARY KEY (id),
     INDEX micro_oligo (microarray_id, oligo_id),
+    INDEX oligo_id (oligo_id),
     FOREIGN KEY (microarray_id)
         REFERENCES microarray(id),
     FOREIGN KEY (oligo_id)
