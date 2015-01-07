@@ -68,7 +68,7 @@ class Database:
 
     def get_tm_vs_probes(self):
         """
-        SP which will divide the number of oligo entries by the number of enties with a unique melting temperature
+        SP which will divide the number of oligo entries by the number of entries with a unique melting temperature
         :return: result of (total count / count with unique temp)
         """
 
@@ -83,7 +83,7 @@ class Database:
 
     def mark_duplicate_oligos(self):
         """
-        Calls a mysql stored procedure which will mark all the enties with a duplicate sequence present in oligo table
+        Calls a mysql stored procedure which will mark all the entries with a duplicate sequence present in oligo table
         :return: number of marked oligo's
         """
         self.cur = self.conn.cursor()

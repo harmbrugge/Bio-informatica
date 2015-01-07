@@ -5,6 +5,7 @@ SQL Script with stored procedures depends on database made by create.sql
 DROP PROCEDURE IF EXISTS sp_get_genes;
 DROP PROCEDURE IF EXISTS sp_get_tm_vs_probes;
 DROP PROCEDURE IF EXISTS sp_mark_duplicate_oligos;
+DROP PROCEDURE IF EXISTS sp_get_oligos_by_tm;
 
 DELIMITER //
 
@@ -69,5 +70,34 @@ CREATE PROCEDURE sp_mark_duplicate_oligos()
 
   END //
 
-DELIMITER ;
+CREATE PROCEDURE sp_get_oligos_by_tm(IN min DOUBLE, IN max DOUBLE)
+  BEGIN
+    SELECT *
+    FROM oligo
+    WHERE cg_perc BETWEEN min AND max;
+  END //
+
+CREATE PROCEDURE sp_create_matrix(IN melting_t DOUBLE, IN max_difference DOUBLE, OUT id INT)
+  BEGIN
+    DECLARE finished INTEGER DEFAULT 0;
+    DECLARE test varchar(255) DEFAULT '';
+
+
+    DECLARE probes CURSOR FOR SELECT *
+                              FROM oligo
+                              WHERE cg_perc BETWEEN melting_t - max_difference AND melting_t + max_difference;
+
+    DECLARE CONTINUE HANDLER
+    FOR NOT FOUND SET finished = 1;
+
+    OPEN probes;
+
+
+  END //
+
+
+
+
+
+
 
