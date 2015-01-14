@@ -92,6 +92,8 @@ CREATE TABLE microarray (
     */
     id            INT         NOT NULL AUTO_INCREMENT,
     hybrid_temp   DOUBLE      NULL DEFAULT NULL,
+    gene_count_zero INT       NULL DEFAULT NULL,
+    gene_count_one INT        NULL DEFAULT NULL,
 
     PRIMARY KEY (id)
     );
