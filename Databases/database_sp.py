@@ -95,10 +95,62 @@ class Database:
 
         return self.cur.fetchall()[0][0]
 
+    def sp_create_matrix(self, temp, max_difference):
+        """
+
+        :param temp:
+        :param max_difference:
+        :return:
+        """
+        self.cur = self.conn.cursor()
+        self.cur.execute("call sp_create_matrix({0},{1})".format(temp, max_difference))
+        self.conn.next_result()
+
+        self.cur.close()
+
+        print('Microarray created with id: ' + str(self.cur.fetchall()[0][0]))
+
+    def sp_create_probe(self, microarray_id, oligo_id):
+        """
+
+        :param microarray_id:
+        :param oligo_id:
+        """
+        self.cur = self.conn.cursor()
+        self.cur.execute("call sp_create_probe({0},{1})".format(microarray_id, oligo_id))
+
+        self.cur.close()
+
+    def sp_get_matrices_by_quality(self):
+        """
+
+        :return:
+        """
+        self.cur = self.conn.cursor(pymysql.cursors.DictCursor)
+        self.cur.execute("call sp_get_matrices_by_quality()")
+        self.conn.next_result()
+
+        self.cur.close()
+
+        return self.cur.fetchall()
+
+    def sp_remove_overlapping_probes_from_matrix(self):
+        self.cur = self.conn.cursor()
+        self.cur.execute("sp_remove_overlapping_probes_from_matrix()")
+
+        self.cur.close()
+
 if __name__ == '__main__':
     db = Database()
     db.open_connection()
     print(db.get_genes())
     print(db.get_tm_vs_probes())
     print(db.mark_duplicate_oligos())
+
+    db.sp_create_matrix(50, 5)
+    db.sp_create_matrix(20, 5)
+    db.sp_create_matrix(80, 5)
+
+    print(db.sp_get_matrices_by_quality())
+
     db.close_connection()

@@ -9,6 +9,7 @@ DROP PROCEDURE IF EXISTS sp_get_oligos_by_tm;
 DROP PROCEDURE IF EXISTS sp_create_matrix;
 DROP PROCEDURE IF EXISTS sp_get_matrices_by_quality;
 DROP PROCEDURE IF EXISTS sp_create_probe;
+DROP PROCEDURE IF EXISTS sp_remove_overlapping_probes_from_matrix;
 
 DELIMITER //
 
@@ -48,7 +49,7 @@ CREATE PROCEDURE sp_get_tm_vs_probes(OUT out_param DOUBLE)
   END //
 
 /*
-SP which will mark all the enties with a duplicate sequence present in oligo table
+SP which will mark all the entries with a duplicate sequence present in oligo table
 return: number of marked oligo's
  */
 
@@ -73,12 +74,24 @@ CREATE PROCEDURE sp_mark_duplicate_oligos()
 
   END //
 
+/*
+SP which selects all oligo's within a melt_temp range (min, max)
+ */
+
 CREATE PROCEDURE sp_get_oligos_by_tm(IN min DOUBLE, IN max DOUBLE)
   BEGIN
     SELECT *
     FROM oligo
-    WHERE cg_perc BETWEEN min AND max;
+    WHERE temp_melt BETWEEN min AND max;
   END //
+
+/*
+SP to create a microarray:
+IN Parameters: Melting temperature, max difference
+    Will set the microarray table
+    Will set the probe table for al possible probes within the temperature range
+
+ */
 
 CREATE PROCEDURE sp_create_matrix(IN melting_t DOUBLE, IN max_difference DOUBLE)
   BEGIN
@@ -87,21 +100,21 @@ CREATE PROCEDURE sp_create_matrix(IN melting_t DOUBLE, IN max_difference DOUBLE)
     DECLARE v_oligo_id INT;
     DECLARE v_microarray_id INT;
 
-/*  */
+/* Get cursor with valid probes */
     DECLARE cursor_probes CURSOR FOR SELECT id
                                      FROM oligo
-                                     WHERE cg_perc BETWEEN melting_t - max_difference AND melting_t + max_difference;
+                                     WHERE temp_melt BETWEEN melting_t - max_difference AND melting_t + max_difference;
 
     DECLARE CONTINUE HANDLER
     FOR NOT FOUND SET finished = 1;
 
+/* Set microarray tabel & get inserted primary key */
     INSERT INTO microarray (hybrid_temp) VALUES (melting_t);
-
     SELECT LAST_INSERT_ID()
     INTO v_microarray_id;
 
+/* Loop over cursor */
     OPEN cursor_probes;
-
     get_probes: LOOP
       FETCH cursor_probes
       INTO v_oligo_id;
@@ -110,10 +123,12 @@ CREATE PROCEDURE sp_create_matrix(IN melting_t DOUBLE, IN max_difference DOUBLE)
       THEN
         LEAVE get_probes;
       END IF;
-
+/* Use SP to insert the probe into the probe tabel */
       CALL sp_create_probe(v_microarray_id, v_oligo_id);
 
     END LOOP get_probes;
+
+    SELECT v_microarray_id;
 
   END //
 
@@ -123,6 +138,12 @@ CREATE PROCEDURE sp_create_probe(IN v_microarray_id INT, IN v_oligo_id INT)
     INSERT INTO probe (microarray_id, oligo_id) VALUES (v_microarray_id, v_oligo_id);
   END //
 
+
+/*
+SP will determine how many genes have zero or one probe(s).
+Sets this information into the microarray table
+and selects the table sorted by genes with zero probes desc and one probe asc.
+ */
 
 CREATE PROCEDURE sp_get_matrices_by_quality()
   BEGIN
@@ -139,6 +160,7 @@ CREATE PROCEDURE sp_get_matrices_by_quality()
     DECLARE CONTINUE HANDLER
     FOR NOT FOUND SET finished = 1;
 
+/* Totale count van de genen */
     SELECT count(*)
     FROM gene
     INTO v_gene_count;
@@ -155,8 +177,6 @@ CREATE PROCEDURE sp_get_matrices_by_quality()
         LEAVE get_microarrays;
       END IF;
 
-      SELECT v_microarray_id;
-
 /* Selecteer de count van genen met probes
    in de variable probe_count_gene
   */
@@ -171,7 +191,7 @@ CREATE PROCEDURE sp_get_matrices_by_quality()
       INTO v_probe_count_gene;
 
 /* Selecteer de count van genen met 1 probes
-   in de variable v_gene_count_1
+   in de variable v_probe_count_gene_1
   */
       SELECT count(*)
       FROM (
@@ -183,22 +203,31 @@ CREATE PROCEDURE sp_get_matrices_by_quality()
              HAVING COUNT(p.id) = 1) AS micro_array_1_table
       INTO v_probe_count_gene_1;
 
-
+/* Insert values into microarray table */
       UPDATE microarray
       SET gene_count_zero = v_gene_count - v_probe_count_gene, gene_count_one = v_probe_count_gene_1
       WHERE id = v_microarray_id;
 
     END LOOP get_microarrays;
 
+/* Select query to get resultset
+   (Uit de opdracht kon ik niet precies opmaken hoe er moest worden gesort)*/
+    SELECT *
+    FROM microarray
+    ORDER BY gene_count_zero DESC, gene_count_one ASC;
+
   END //
+
+/* Sp which will remove duplicate probes in a microarray */
 
 CREATE PROCEDURE sp_remove_overlapping_probes_from_matrix(IN v_microarray_id INT)
   BEGIN
 
     CALL sp_mark_duplicate_oligos();
-    DELETE FROM probe WHERE id in (SELECT p.id
-    FROM probe p JOIN oligo o ON o.id = p.oligo_id
-    WHERE p.microarray_id = v_microarray_id and o.duplicate = TRUE);
+    DELETE FROM probe
+    WHERE id IN (SELECT p.id
+                 FROM probe p JOIN oligo o ON o.id = p.oligo_id
+                 WHERE p.microarray_id = v_microarray_id AND o.duplicate = TRUE);
 
   END //
 
